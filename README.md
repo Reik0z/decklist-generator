@@ -2,8 +2,6 @@
 
 Genera imágenes de decklists de **Riftbound** automáticamente a partir de listas de texto. Diseñado para el torneo **Unleashed Open** de la comunidad Riftbound Chile.
 
-![Ejemplo de decklist generada](https://i.imgur.com/placeholder.png)
-
 ## Requisitos
 
 - [Node.js](https://nodejs.org/) v18 o superior
@@ -65,20 +63,6 @@ node generate.js
 
 Las imágenes PNG se guardan en la carpeta `output/`.
 
-## Estructura del proyecto
-
-```
-decklist-generator/
-├── cards/               ← imágenes de cartas (generadas por download_missing.ps1)
-├── cards_local.json     ← base de datos de cartas con rutas locales
-├── input/               ← decklists de jugadores (.txt)
-├── output/              ← imágenes generadas (.png)
-├── generate.js          ← script principal
-├── template.html        ← plantilla HTML editable (diseño de la imagen)
-├── download_missing.ps1 ← descarga imágenes faltantes desde el servidor oficial
-└── package.json
-```
-
 ## Personalización
 
 El diseño visual se controla desde `template.html`. Las variables CSS al inicio del archivo permiten cambiar colores, tamaños y fuentes sin tocar la lógica:
@@ -93,7 +77,3 @@ El diseño visual se controla desde `template.html`. Las variables CSS al inicio
 }
 ```
 
-## Comunidad
-
-- **Riftbound Chile** — Comunidad Riftbound Chile
-- **One Up** — Organizador del torneo
