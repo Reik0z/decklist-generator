@@ -1,0 +1,13 @@
+{
+  "name": "decklist-generator",
+  "version": "1.0.0",
+  "description": "Generates Riftbound decklist images from text files",
+  "main": "generate.js",
+  "scripts": {
+    "start": "node generate.js",
+    "install-deps": "npm install puppeteer"
+  },
+  "dependencies": {
+    "puppeteer": "^22.15.0"
+  }
+}

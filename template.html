@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       PLANTILLA EDITABLE
+       ─ Colores, tamaños y layout → modifica las variables :root
+       ─ Fondo              → edita los gradientes en body { background }
+       ─ Logo               → edita .logo-* o la función renderLogo()
+    ═══════════════════════════════════════════════════════════════ */
+    :root {
+      /* Paleta — Unleashed Open */
+      --gold:        #C4982A;
+      --gold-light:  #E2BF60;
+      --red:         #C01818;
+      --red-bright:  #E52424;
+      --red-glow:    rgba(180, 15, 15, 0.35);
+      --purple-dim:  rgba(80, 20, 110, 0.18);
+      --text:        #FFFFFF;
+      --text-dim:    rgba(255,255,255,0.48);
+
+      /* Tamaño cartas Legend / Champion (izquierda) */
+      --feat-w: 218px;
+      --feat-h: 304px;
+
+      /* Tamaño cartas del mazo principal */
+      --card-w: 150px;
+      --card-h: 209px;
+
+      /* Tamaño cartas del sideboard */
+      --sb-w: 104px;
+      --sb-h: 145px;
+
+      /* Tamaño battlefields (footer izquierda, landscape) */
+      --bf-w: 132px;
+      --bf-h:  95px;
+
+      /* Badge circular de cantidad */
+      --badge-sz: 30px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width:  1920px;
+      height: 1080px;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: var(--text);
+
+      /* ── FONDO — Unleashed Open: negro profundo + rojo + purple ── */
+      background:
+        radial-gradient(ellipse 900px 650px at 50% 38%, rgba(120, 8,  8, 0.22) 0%, transparent 60%),
+        radial-gradient(ellipse 700px 500px at 75% 65%, rgba(70, 10, 90, 0.16) 0%, transparent 65%),
+        radial-gradient(ellipse 500px 400px at 15% 80%, rgba(90,  5,  5, 0.14) 0%, transparent 65%),
+        radial-gradient(ellipse 400px 300px at 85% 15%, rgba(60,  0, 70, 0.12) 0%, transparent 65%),
+        linear-gradient(170deg, #0E0507 0%, #080306 55%, #040103 100%);
+    }
+
+    /* Partículas/estrellas decorativas (CSS puro) */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(1.2px 1.2px at  8%  7%, rgba(255,255,255,.55) 0%, transparent 100%),
+        radial-gradient(1px   1px   at 23% 14%, rgba(255,255,255,.35) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 41%  4%, rgba(255,255,255,.45) 0%, transparent 100%),
+        radial-gradient(1px   1px   at 58% 20%, rgba(255,255,255,.30) 0%, transparent 100%),
+        radial-gradient(1.2px 1.2px at 74%  9%, rgba(255,255,255,.40) 0%, transparent 100%),
+        radial-gradient(1px   1px   at 88% 28%, rgba(255,255,255,.28) 0%, transparent 100%),
+        radial-gradient(1px   1px   at 93% 55%, rgba(255,255,255,.32) 0%, transparent 100%),
+        radial-gradient(1px   1px   at 12% 72%, rgba(255,255,255,.22) 0%, transparent 100%),
+        radial-gradient(1.2px 1.2px at 36% 80%, rgba(255,255,255,.28) 0%, transparent 100%),
+        radial-gradient(1px   1px   at 65% 90%, rgba(255,255,255,.25) 0%, transparent 100%),
+        radial-gradient(1px   1px   at 80% 78%, rgba(255,255,255,.20) 0%, transparent 100%);
+    }
+
+    /* ── Grid principal de la página ──────────────────────────── */
+    .page {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      display: grid;
+      grid-template-columns: 292px 1fr;
+      grid-template-rows: 88px 1fr 118px;
+      column-gap: 14px;
+      padding: 30px 48px 26px 42px;
+      z-index: 1;
+    }
+
+    /* ═══ CELDA 1 — Logo (fila 1, col 1) ════════════════════════ */
+    .logo-cell {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .logo-emblem {
+      width: 58px;
+      height: 58px;
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); /* diamante */
+      background: linear-gradient(135deg, #2A1400, #0E0507);
+      border: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+      outline: 2px solid var(--gold);
+      outline-offset: 3px;
+      box-shadow: 0 0 24px var(--red-glow), 0 0 8px rgba(196,152,42,.3);
+    }
+    .logo-text-block { display: flex; flex-direction: column; gap: 1px; }
+    .logo-main {
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #FFFFFF;
+    }
+    .logo-sub {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .logo-rule {
+      height: 1px;
+      background: linear-gradient(to right, var(--red), var(--gold) 60%, transparent);
+      margin-top: 5px;
+    }
+
+    /* Decoraciones de esquina (estilo flyer) */
+    .corner {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      pointer-events: none;
+    }
+    .corner::before, .corner::after {
+      content: '';
+      position: absolute;
+      background: var(--gold);
+      opacity: .55;
+    }
+    .corner-tl { top: 18px; left: 22px; }
+    .corner-tr { top: 18px; right: 30px; }
+    .corner-tl::before { width: 28px; height: 1.5px; top: 0;    left: 0; }
+    .corner-tl::after  { width: 1.5px; height: 28px; top: 0;    left: 0; }
+    .corner-tr::before { width: 28px; height: 1.5px; top: 0;    right: 0; }
+    .corner-tr::after  { width: 1.5px; height: 28px; top: 0;    right: 0; }
+    /* diamante pequeño en cada esquina */
+    .corner-gem {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: var(--gold);
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+      opacity: .8;
+    }
+    .corner-tl .corner-gem { top: -4px;  left: -4px; }
+    .corner-tr .corner-gem { top: -4px;  right: -4px; }
+
+    /* ═══ CELDA 2 — Nombre del jugador (fila 1, col 2) ══════════ */
+    .player-cell {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+    .player-name {
+      font-size: 88px;
+      font-weight: 900;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      line-height: 1;
+      /* Trazo rojo inferior — guiño al estilo Unleashed */
+      border-bottom: 3px solid var(--red);
+      padding-bottom: 6px;
+      text-shadow:
+        0 0 60px rgba(255,255,255,.15),
+        0 0 20px var(--red-glow),
+        0 2px 12px rgba(0,0,0,.9);
+    }
+
+    /* ═══ CELDA 3 — Panel izquierdo: Legend + Champion ══════════ */
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 28px;   /* 28px > 11px (feat-tag overflow) → no tapa el Champion */
+      padding-right: 18px;
+      padding-bottom: 6px;
+    }
+    .feat-card { position: relative; flex-shrink: 0; }
+    .feat-card img {
+      width:  var(--feat-w);
+      height: var(--feat-h);
+      object-fit: cover;
+      border-radius: 13px;
+      border: 2px solid var(--gold);
+      display: block;
+      box-shadow:
+        0 0 0 1px rgba(0,0,0,.6),
+        0 8px 44px rgba(0,0,0,.8),
+        0 0 28px var(--red-glow),
+        0 0 14px rgba(196,152,42,.2);
+    }
+    .feat-placeholder {
+      width:  var(--feat-w);
+      height: var(--feat-h);
+      border-radius: 13px;
+      border: 1.5px dashed rgba(200,155,60,.25);
+      background: rgba(255,255,255,.03);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 10px;
+      color: rgba(255,255,255,.3);
+      font-size: 11px;
+      text-align: center;
+      padding: 14px;
+    }
+    .feat-tag {
+      position: absolute;
+      bottom: -11px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #100408;
+      border: 1px solid var(--gold);
+      color: var(--gold-light);
+      font-size: 8.5px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      padding: 3px 11px;
+      border-radius: 3px;
+      white-space: nowrap;
+      box-shadow: 0 0 10px var(--red-glow);
+    }
+
+    /* ═══ CELDA 4 — Área del mazo (fila 2, col 2) ═══════════════ */
+    .deck-cell {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 30px;
+      padding-top: 6px;
+      /* espacio para que los badges de la última fila no desborden al footer */
+      padding-bottom: 18px;
+    }
+
+    /* Grid de cartas (maindeck y sideboard comparten este estilo base) */
+    /* row-gap amplio para que el badge circular no tape la fila siguiente */
+    .card-grid { display: flex; flex-wrap: wrap; row-gap: 30px; column-gap: 12px; }
+
+    /* Carta del maindeck */
+    .card-wrap   { position: relative; flex-shrink: 0; }
+    .card-wrap img {
+      width:  var(--card-w);
+      height: var(--card-h);
+      object-fit: cover;
+      border-radius: 8px;
+      display: block;
+      box-shadow: 0 4px 22px rgba(0,0,0,.6);
+      border: 1px solid rgba(255,255,255,.07);
+    }
+    .card-ph {
+      width:  var(--card-w);
+      height: var(--card-h);
+      border-radius: 8px;
+      background: rgba(255,255,255,.04);
+      border: 1px dashed rgba(255,255,255,.11);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,.28);
+      font-size: 9px;
+      text-align: center;
+      padding: 8px;
+    }
+
+    /* Carta del sideboard (más pequeña, ligeramente transparente) */
+    .sb-wrap { position: relative; flex-shrink: 0; }
+    .sb-wrap img {
+      width:  var(--sb-w);
+      height: var(--sb-h);
+      object-fit: cover;
+      border-radius: 7px;
+      display: block;
+      opacity: .82;
+      box-shadow: 0 4px 16px rgba(0,0,0,.6);
+      border: 1px solid rgba(255,255,255,.06);
+    }
+    .sb-ph {
+      width:  var(--sb-w);
+      height: var(--sb-h);
+      border-radius: 7px;
+      background: rgba(255,255,255,.03);
+      border: 1px dashed rgba(255,255,255,.09);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,.25);
+      font-size: 8px;
+      text-align: center;
+      padding: 6px;
+    }
+
+    /* Badge circular de cantidad */
+    .badge {
+      position: absolute;
+      bottom: calc(var(--badge-sz) / -2);
+      left: 50%;
+      transform: translateX(-50%);
+      width:  var(--badge-sz);
+      height: var(--badge-sz);
+      border-radius: 50%;
+      background: #120408;
+      border: 2px solid var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--gold-light);
+      box-shadow: 0 2px 10px rgba(0,0,0,.8), 0 0 8px var(--red-glow);
+      z-index: 2;
+    }
+    /* Badge más pequeño para sideboard */
+    .badge-sm {
+      --badge-sz: 24px;
+      font-size: 10px;
+      border-width: 1.5px;
+    }
+
+    /* Etiqueta sección sideboard */
+    .section-label {
+      font-size: 9px;
+      letter-spacing: 3.5px;
+      color: rgba(255,255,255,.28);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 14px; /* espacio para los badges de la fila anterior */
+    }
+
+    /* ═══ CELDA 5+6 — Footer unificado (span 2 columnas) ═══════════
+       padding-left: 306px alinea battlefields con el inicio del mazo
+    ════════════════════════════════════════════════════════════ */
+    .footer-row {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: flex-end;
+      gap: 20px;
+      padding-left: 306px; /* 292px col izq + 14px gap */
+      padding-bottom: 2px;
+    }
+
+    /* Separador visual entre battlefields y runas */
+    .footer-divider {
+      width: 1px;
+      height: 60px;
+      background: rgba(200,155,60,.2);
+      align-self: flex-end;
+      margin: 0 8px;
+    }
+
+    .bf-wrap { position: relative; flex-shrink: 0; }
+    .bf-wrap img {
+      width:  var(--bf-w);
+      height: var(--bf-h);
+      object-fit: cover;
+      border-radius: 7px;
+      display: block;
+      box-shadow: 0 4px 16px rgba(0,0,0,.6);
+      border: 1px solid rgba(200,155,60,.2);
+    }
+    .bf-ph {
+      width:  var(--bf-w);
+      height: var(--bf-h);
+      border-radius: 7px;
+      background: rgba(255,255,255,.03);
+      border: 1px dashed rgba(200,155,60,.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,.22);
+      font-size: 8px;
+      text-align: center;
+      padding: 4px;
+    }
+
+    /* Runas (ahora en el mismo flex row que battlefields) */
+    .footer-runes {
+      display: flex;
+      align-items: flex-end;
+      gap: 26px;
+    }
+    .rune-entry {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
+    .rune-circle {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2.5px solid rgba(200,155,60,.5);
+      box-shadow: 0 0 22px rgba(200,155,60,.2);
+      flex-shrink: 0;
+      background: rgba(255,255,255,.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .rune-circle img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .rune-circle-ph { font-size: 26px; color: rgba(255,255,255,.4); }
+    .rune-info { display: flex; flex-direction: column; gap: 2px; }
+    .rune-qty {
+      font-size: 40px;
+      font-weight: 900;
+      line-height: 1;
+      color: #FFFFFF;
+      text-shadow: 0 2px 10px rgba(0,0,0,.6);
+    }
+    .rune-name {
+      font-size: 9.5px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+  </style>
+</head>
+<body>
+<div class="page" id="app"></div>
+<script>
+  /* __DECK_DATA__ */
+
+  // ── Utilidades ────────────────────────────────────────────────────────────────
+  function esc(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function mkImg(src, alt, onErr) {
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = esc(alt);
+    img.onerror = onErr;
+    return img;
+  }
+
+  // ── Constructores de elementos ────────────────────────────────────────────────
+
+  function makeFeatCard(entry, typeLabel) {
+    const wrap = document.createElement('div');
+    wrap.className = 'feat-card';
+
+    if (entry.img) {
+      const img = mkImg(entry.img, entry.name, function() {
+        const ph = document.createElement('div');
+        ph.className = 'feat-placeholder';
+        ph.innerHTML = `<span>🃏</span><span>${esc(entry.name)}</span>`;
+        this.replaceWith(ph);
+      });
+      wrap.appendChild(img);
+    } else {
+      const ph = document.createElement('div');
+      ph.className = 'feat-placeholder';
+      ph.innerHTML = `<span>🃏</span><span>${esc(entry.name)}</span>`;
+      wrap.appendChild(ph);
+    }
+
+    const tag = document.createElement('div');
+    tag.className = 'feat-tag';
+    tag.textContent = typeLabel;
+    wrap.appendChild(tag);
+    return wrap;
+  }
+
+  function makeCard(entry, wrapCls, phCls, badgeCls) {
+    const wrap = document.createElement('div');
+    wrap.className = wrapCls;
+
+    if (entry.img) {
+      const img = mkImg(entry.img, entry.name, function() {
+        const ph = document.createElement('div');
+        ph.className = phCls;
+        ph.textContent = entry.name;
+        this.replaceWith(ph);
+      });
+      wrap.appendChild(img);
+    } else {
+      const ph = document.createElement('div');
+      ph.className = phCls;
+      ph.textContent = entry.name;
+      wrap.appendChild(ph);
+    }
+
+    const badge = document.createElement('div');
+    badge.className = badgeCls;
+    badge.textContent = entry.qty;
+    wrap.appendChild(badge);
+    return wrap;
+  }
+
+  function makeBf(entry) {
+    const wrap = document.createElement('div');
+    wrap.className = 'bf-wrap';
+    if (entry.img) {
+      const img = mkImg(entry.img, entry.name, function() {
+        const ph = document.createElement('div');
+        ph.className = 'bf-ph';
+        ph.textContent = entry.name;
+        this.replaceWith(ph);
+      });
+      wrap.appendChild(img);
+    } else {
+      const ph = document.createElement('div');
+      ph.className = 'bf-ph';
+      ph.textContent = entry.name;
+      wrap.appendChild(ph);
+    }
+    return wrap;
+  }
+
+  function makeRune(entry) {
+    const wrap = document.createElement('div');
+    wrap.className = 'rune-entry';
+
+    const circle = document.createElement('div');
+    circle.className = 'rune-circle';
+    if (entry.img) {
+      const img = mkImg(entry.img, entry.name, function() {
+        const ph = document.createElement('div');
+        ph.className = 'rune-circle-ph';
+        ph.textContent = '🔮';
+        this.replaceWith(ph);
+      });
+      circle.appendChild(img);
+    } else {
+      circle.innerHTML = `<div class="rune-circle-ph">🔮</div>`;
+    }
+    wrap.appendChild(circle);
+
+    const info = document.createElement('div');
+    info.className = 'rune-info';
+    info.innerHTML = `
+      <div class="rune-qty">x${entry.qty}</div>
+      <div class="rune-name">${esc(entry.name)}</div>`;
+    wrap.appendChild(info);
+    return wrap;
+  }
+
+  // ── Render principal ──────────────────────────────────────────────────────────
+  function render() {
+    const d   = window.DECK_DATA;
+    const app = document.getElementById('app');
+
+    // Decoraciones de esquina (estilo flyer Unleashed Open)
+    app.insertAdjacentHTML('beforeend', `
+      <div class="corner corner-tl"><div class="corner-gem"></div></div>
+      <div class="corner corner-tr"><div class="corner-gem"></div></div>`);
+
+    // Celda 1 — Logo
+    const logoCell = document.createElement('div');
+    logoCell.className = 'logo-cell';
+    logoCell.innerHTML = `
+      <div class="logo-emblem">◆</div>
+      <div class="logo-text-block">
+        <div class="logo-main">Unleashed Open</div>
+        <div class="logo-sub">Riftbound Chile</div>
+        <div class="logo-rule"></div>
+      </div>`;
+    app.appendChild(logoCell);
+
+    // Celda 2 — Nombre del jugador
+    const playerCell = document.createElement('div');
+    playerCell.className = 'player-cell';
+    playerCell.innerHTML = `<div class="player-name">${esc(d.playerName)}</div>`;
+    app.appendChild(playerCell);
+
+    // Celda 3 — Legend + Champion
+    const leftPanel = document.createElement('div');
+    leftPanel.className = 'left-panel';
+    if (d.legend[0])   leftPanel.appendChild(makeFeatCard(d.legend[0],   'Legend'));
+    if (d.champion[0]) leftPanel.appendChild(makeFeatCard(d.champion[0], 'Champion'));
+    app.appendChild(leftPanel);
+
+    // Celda 4 — Mazo principal + Sideboard
+    const deckCell = document.createElement('div');
+    deckCell.className = 'deck-cell';
+
+    if (d.maindeck.length > 0) {
+      const grid = document.createElement('div');
+      grid.className = 'card-grid';
+      d.maindeck.forEach(e => grid.appendChild(makeCard(e, 'card-wrap', 'card-ph', 'badge')));
+      deckCell.appendChild(grid);
+    }
+
+    if (d.sideboard.length > 0) {
+      const label = document.createElement('div');
+      label.className = 'section-label';
+      label.textContent = 'Sideboard';
+      deckCell.appendChild(label);
+
+      const sbGrid = document.createElement('div');
+      sbGrid.className = 'card-grid';
+      d.sideboard.forEach(e => sbGrid.appendChild(makeCard(e, 'sb-wrap', 'sb-ph', 'badge badge-sm')));
+      deckCell.appendChild(sbGrid);
+    }
+
+    app.appendChild(deckCell);
+
+    // Celda 5+6 — Footer unificado: Battlefields | Runas
+    const footerRow = document.createElement('div');
+    footerRow.className = 'footer-row';
+
+    // Battlefields
+    d.battlefields.forEach(e => footerRow.appendChild(makeBf(e)));
+
+    // Separador visual
+    if (d.battlefields.length > 0 && d.runepool.length > 0) {
+      const div = document.createElement('div');
+      div.className = 'footer-divider';
+      footerRow.appendChild(div);
+    }
+
+    // Runas
+    const runesWrap = document.createElement('div');
+    runesWrap.className = 'footer-runes';
+    d.runepool.forEach(e => runesWrap.appendChild(makeRune(e)));
+    footerRow.appendChild(runesWrap);
+
+    app.appendChild(footerRow);
+  }
+
+  render();
+</script>
+</body>
+</html>

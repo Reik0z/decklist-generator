@@ -1,0 +1,17 @@
+# Dependencias Node
+node_modules/
+
+# Imágenes de cartas — demasiado pesadas para GitHub (~900 MB)
+# Ejecuta download_missing.ps1 para descargarlas localmente
+cards/
+
+# Decklists de jugadores (privadas) — ignorar contenido pero mantener la carpeta
+input/*.txt
+
+# Imágenes generadas
+output/
+
+# Temporales del sistema
+*.tmp
+Thumbs.db
+.DS_Store
