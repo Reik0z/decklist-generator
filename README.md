@@ -1,6 +1,6 @@
-# Decklist Generator — Unleashed Open
+# Decklist Generator
 
-Genera imágenes de decklists de **Riftbound** automáticamente a partir de listas de texto. Diseñado para el torneo **Unleashed Open** de la comunidad Riftbound Chile.
+Genera imágenes de decklists de **Riftbound** automáticamente a partir de listas de texto.
 
 ## Requisitos
 
