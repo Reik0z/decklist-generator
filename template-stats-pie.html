@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+  :root {
+    --gold:       #C4982A;
+    --gold-light: #E2BF60;
+    --gold-dim:   #8A6A1A;
+    --text:       #FFFFFF;
+    --text-dim:   #A0A0B0;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    width: 1080px; height: 1350px;
+    overflow: hidden;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(ellipse 900px 600px at 50% 25%, rgba(20,30,80,0.30) 0%, transparent 55%),
+      radial-gradient(ellipse 700px 500px at 20% 70%, rgba(120,8,8,0.15) 0%, transparent 55%),
+      linear-gradient(170deg, #080B14 0%, #060809 55%, #04060A 100%);
+  }
+
+  .page {
+    width: 1080px; height: 1350px;
+    display: grid;
+    grid-template-rows: 158px 1fr 90px;
+    padding: 28px 38px;
+  }
+
+  /* ══ HEADER ════════════════════════════════════════════════════════════════ */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(196,152,42,0.35);
+    padding-bottom: 16px;
+    margin-top: 4px;
+  }
+
+  .logo-block { display: flex; flex-direction: column; min-width: 200px; gap: 2px; }
+  .logo-diamond {
+    width: 28px; height: 28px;
+    background: var(--gold);
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    margin-bottom: 6px;
+  }
+  .logo-name { font-size: 19px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-light); line-height: 1; }
+  .logo-sub  { font-size: 10px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; color: var(--gold-dim); }
+
+  .center-title { text-align: center; flex: 1; }
+  .title-row { display: flex; align-items: center; justify-content: center; gap: 14px; }
+  .title-arrow { width: 70px; height: 1px; background: linear-gradient(to right, transparent, var(--gold)); }
+  .title-arrow.r { background: linear-gradient(to left, transparent, var(--gold)); }
+  .title-main { font-size: 40px; font-weight: 900; letter-spacing: 6px; text-transform: uppercase; color: var(--gold-light); line-height: 1; text-shadow: 0 0 28px rgba(196,152,42,0.45); }
+  .title-event { font-size: 13px; font-weight: 600; letter-spacing: 5px; text-transform: uppercase; color: var(--text-dim); margin-top: 5px; }
+  .title-sub   { font-size: 16px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-top: 4px; }
+
+  .badge-hex {
+    width: 88px; height: 88px;
+    min-width: 88px;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+    background: rgba(196,152,42,0.08);
+    border: 2px solid var(--gold);
+  }
+  .badge-hex span { font-size: 28px; color: var(--gold); font-weight: 900; }
+
+  /* ══ BODY ══════════════════════════════════════════════════════════════════ */
+  .body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    align-items: center;
+    padding: 20px 0;
+  }
+
+  /* ── Pie panel ──────────────────────────────────────────────────────────── */
+  .pie-panel {
+    display: flex; align-items: center; justify-content: center;
+    height: 100%;
+  }
+
+  #pie-wrap {
+    width: 460px; height: 460px;
+    position: relative;
+    border-radius: 50%;
+    overflow: hidden; /* clips images to the circle */
+  }
+
+  /* Each slice: absolutely fills the wrap, clip-path applied by JS */
+  .slice {
+    position: absolute; inset: 0;
+  }
+  .slice img {
+    position: absolute;
+    width: 460px;
+    height: 680px; /* portrait card scaled to 460px wide */
+    object-fit: cover;
+    object-position: center 0%;
+    top: -20px; left: 0;
+    display: block;
+  }
+  .slice-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.18);
+  }
+  .slice-fallback {
+    position: absolute; inset: 0;
+    opacity: 0.75;
+  }
+
+  /* SVG overlay (separator lines, ring, labels) */
+  #pie-svg {
+    position: absolute; inset: 0;
+    width: 460px; height: 460px;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  /* ── Table panel ────────────────────────────────────────────────────────── */
+  .table-panel {
+    display: flex; flex-direction: column; justify-content: center;
+    height: 100%;
+    gap: 0;
+  }
+
+  .col-header {
+    display: grid;
+    grid-template-columns: 56px 1fr 84px 80px;
+    gap: 8px;
+    padding-bottom: 8px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid rgba(196,152,42,0.30);
+  }
+  .ch { font-size: 9px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-dim); }
+  .ch.right { text-align: right; }
+  .ch.center { text-align: center; }
+
+  .legend-row {
+    display: grid;
+    grid-template-columns: 56px 1fr 84px 80px;
+    gap: 8px;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    height: var(--row-h, 110px);
+  }
+
+  /* Circular thumbnail */
+  .thumb {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--c);
+    box-shadow: 0 0 14px color-mix(in srgb, var(--c) 50%, transparent);
+    position: relative; flex-shrink: 0;
+  }
+  .thumb img {
+    position: absolute;
+    width: 52px; height: 80px;
+    object-fit: cover;
+    object-position: center 5%;
+    top: 0; left: 0;
+  }
+  .thumb-init {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.06);
+    font-size: 18px; font-weight: 900; color: var(--c);
+  }
+
+  .info { padding-left: 8px; }
+  .info-name { font-size: 19px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text); line-height: 1.1; }
+  .info-domain { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--c); margin-top: 3px; }
+
+  .pct { text-align: center; font-size: 20px; font-weight: 700; color: var(--gold-light); font-variant-numeric: tabular-nums; }
+  .cnt { text-align: right; font-size: 26px; font-weight: 900; color: var(--text); font-variant-numeric: tabular-nums; }
+
+  /* ══ FOOTER ════════════════════════════════════════════════════════════════ */
+  .footer {
+    border-top: 1px solid rgba(196,152,42,0.25);
+    padding-top: 14px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .footer-box {
+    display: flex; align-items: center; gap: 14px;
+    border: 1px solid rgba(196,152,42,0.28);
+    padding: 10px 18px;
+    border-radius: 3px;
+    background: rgba(196,152,42,0.04);
+  }
+  .footer-icon { font-size: 20px; color: var(--gold); }
+  .footer-text { font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-dim); line-height: 1.6; }
+  .footer-date { font-size: 11px; letter-spacing: 2px; color: rgba(160,160,176,0.55); }
+
+  /* ── Corners ────────────────────────────────────────────────────────────── */
+  .corner { position: fixed; pointer-events: none; }
+  .corner-tl { top: 12px; left: 12px; }
+  .corner-tr { top: 12px; right: 12px; }
+  .corner-bl { bottom: 12px; left: 12px; }
+  .corner-br { bottom: 12px; right: 12px; }
+  .corner::before, .corner::after { content: ''; position: absolute; background: var(--gold); opacity: 0.50; }
+  .corner-tl::before, .corner-tr::before, .corner-bl::before, .corner-br::before { width: 26px; height: 1.5px; }
+  .corner-tl::after,  .corner-tr::after,  .corner-bl::after,  .corner-br::after  { width: 1.5px; height: 26px; }
+  .corner-tl::before { top: 0; left: 0; }  .corner-tl::after { top: 0; left: 0; }
+  .corner-tr::before { top: 0; right: 0; } .corner-tr::after { top: 0; right: 0; }
+  .corner-bl::before { bottom: 0; left: 0; }  .corner-bl::after { bottom: 0; left: 0; }
+  .corner-br::before { bottom: 0; right: 0; } .corner-br::after { bottom: 0; right: 0; }
+  .corner-gem { position: absolute; width: 7px; height: 7px; background: var(--gold); clip-path: polygon(50% 0%,100% 50%,50% 100%,0% 50%); }
+  .corner-tl .corner-gem { top: -3px; left: -3px; }
+  .corner-tr .corner-gem { top: -3px; right: -3px; }
+  .corner-bl .corner-gem { bottom: -3px; left: -3px; }
+  .corner-br .corner-gem { bottom: -3px; right: -3px; }
+</style>
+</head>
+<body>
+<div class="corner corner-tl"><div class="corner-gem"></div></div>
+<div class="corner corner-tr"><div class="corner-gem"></div></div>
+<div class="corner corner-bl"><div class="corner-gem"></div></div>
+<div class="corner corner-br"><div class="corner-gem"></div></div>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo-block">
+      <div class="logo-diamond"></div>
+      <div class="logo-name">Unleashed Open</div>
+      <div class="logo-sub">Riftbound Chile</div>
+    </div>
+
+    <div class="center-title">
+      <div class="title-row">
+        <div class="title-arrow"></div>
+        <span class="title-main">Estadísticas</span>
+        <div class="title-arrow r"></div>
+      </div>
+      <div class="title-event" id="hdr-event">Unleashed Open</div>
+      <div class="title-sub">Leyendas más jugadas</div>
+    </div>
+
+    <div class="badge-hex"><span>◆</span></div>
+  </header>
+
+  <!-- BODY -->
+  <main class="body">
+
+    <!-- LEFT: pie chart -->
+    <div class="pie-panel">
+      <div id="pie-wrap">
+        <!-- slice divs injected by JS, then SVG overlay -->
+        <svg id="pie-svg" viewBox="0 0 460 460">
+          <defs>
+            <filter id="txt-shadow">
+              <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="black" flood-opacity="0.95"/>
+            </filter>
+          </defs>
+          <g id="pie-lines"></g>
+          <g id="pie-ring"></g>
+          <g id="pie-labels"></g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- RIGHT: table -->
+    <div class="table-panel" id="table-panel">
+      <div class="col-header">
+        <div class="ch"></div>
+        <div class="ch" style="padding-left:8px">Leyenda</div>
+        <div class="ch center">% del meta</div>
+        <div class="ch right" style="font-size:8px">Cantidad<br>de mazos</div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-box">
+      <span class="footer-icon">◈</span>
+      <div class="footer-text" id="footer-total"></div>
+    </div>
+    <span class="footer-date" id="footer-date"></span>
+  </footer>
+
+</div>
+
+<script>
+  /* __STATS_DATA__ */
+
+  const { stats, total, date, eventName } = window.STATS_DATA;
+
+  if (eventName) document.getElementById('hdr-event').textContent = eventName;
+  document.getElementById('footer-total').innerHTML =
+    `Datos recolectados de ${total} mazo${total !== 1 ? 's' : ''}<br>registrados`;
+  document.getElementById('footer-date').textContent = `Actualizado: ${date}`;
+
+  const visible  = stats.slice(0, 8);
+  const maxCount = visible[0]?.count ?? 1;
+
+  // Row height
+  const BODY_H = 1350 - 158 - 90 - 56 - 40; // approx content area
+  const rowH   = Math.max(72, Math.floor((BODY_H - 30) / visible.length));
+  document.documentElement.style.setProperty('--row-h', rowH + 'px');
+
+  // ── Pie chart ──────────────────────────────────────────────────────────────
+  const R  = 230; // radius
+  const CX = 230, CY = 230; // center of 460×460 wrap
+
+  function polar(r, deg) {
+    const rad = (deg - 90) * Math.PI / 180;
+    return { x: CX + r * Math.cos(rad), y: CY + r * Math.sin(rad) };
+  }
+
+  function arcPath(startDeg, endDeg) {
+    if (endDeg - startDeg >= 359.9) {
+      // Full circle edge case — split into two arcs
+      const t = polar(R, startDeg);
+      const m = polar(R, startDeg + 180);
+      return `M ${CX} ${CY} L ${t.x.toFixed(3)} ${t.y.toFixed(3)} A ${R} ${R} 0 1 1 ${m.x.toFixed(3)} ${m.y.toFixed(3)} A ${R} ${R} 0 1 1 ${t.x.toFixed(3)} ${t.y.toFixed(3)} Z`;
+    }
+    const p1 = polar(R, startDeg);
+    const p2 = polar(R, endDeg);
+    const lg = (endDeg - startDeg) > 180 ? 1 : 0;
+    return `M ${CX} ${CY} L ${p1.x.toFixed(3)} ${p1.y.toFixed(3)} A ${R} ${R} 0 ${lg} 1 ${p2.x.toFixed(3)} ${p2.y.toFixed(3)} Z`;
+  }
+
+  const wrap       = document.getElementById('pie-wrap');
+  const svgEl      = document.getElementById('pie-svg');
+  const linesG     = document.getElementById('pie-lines');
+  const ringG      = document.getElementById('pie-ring');
+  const labelsG    = document.getElementById('pie-labels');
+
+  let angle = 0;
+
+  for (let i = 0; i < visible.length; i++) {
+    const entry      = visible[i];
+    const sweep      = (entry.count / total) * 360;
+    const startAngle = angle;
+    const endAngle   = angle + sweep;
+    angle += sweep;
+
+    const path   = arcPath(startAngle, endAngle);
+    const midAng = (startAngle + endAngle) / 2;
+    const lp     = polar(R * 0.60, midAng);
+
+    // ── Slice div (HTML, clip-path cuts to wedge shape) ──
+    const sliceDiv = document.createElement('div');
+    sliceDiv.className = 'slice';
+    sliceDiv.style.clipPath = `path('${path}')`;
+
+    if (entry.img) {
+      const img = document.createElement('img');
+      img.src = entry.img;
+      img.loading = 'eager';
+      sliceDiv.appendChild(img);
+      const overlay = document.createElement('div');
+      overlay.className = 'slice-overlay';
+      sliceDiv.appendChild(overlay);
+    } else {
+      const fb = document.createElement('div');
+      fb.className = 'slice-fallback';
+      fb.style.background = entry.color;
+      sliceDiv.appendChild(fb);
+    }
+
+    // Insert before the SVG so SVG stays on top
+    wrap.insertBefore(sliceDiv, svgEl);
+
+    // ── Separator line at startAngle ──
+    const lp1 = polar(R, startAngle);
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', CX); line.setAttribute('y1', CY);
+    line.setAttribute('x2', lp1.x.toFixed(2)); line.setAttribute('y2', lp1.y.toFixed(2));
+    line.setAttribute('stroke', '#C4982A');
+    line.setAttribute('stroke-width', '2.5');
+    linesG.appendChild(line);
+
+    // ── % label (only if slice is big enough) ──
+    if (sweep > 11) {
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', lp.x.toFixed(2));
+      text.setAttribute('y', (lp.y + 6).toFixed(2));
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('font-family', "'Segoe UI', Arial, sans-serif");
+      text.setAttribute('font-size', '17');
+      text.setAttribute('font-weight', '900');
+      text.setAttribute('fill', 'white');
+      text.setAttribute('filter', 'url(#txt-shadow)');
+      text.textContent = entry.pct + '%';
+      labelsG.appendChild(text);
+    }
+  }
+
+  // Close last separator
+  const lastPt = polar(R, 0);
+  const lastLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  lastLine.setAttribute('x1', CX); lastLine.setAttribute('y1', CY);
+  lastLine.setAttribute('x2', lastPt.x.toFixed(2)); lastLine.setAttribute('y2', lastPt.y.toFixed(2));
+  lastLine.setAttribute('stroke', '#C4982A');
+  lastLine.setAttribute('stroke-width', '2.5');
+  linesG.appendChild(lastLine);
+
+  // Gold outer ring
+  const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  ring.setAttribute('cx', CX); ring.setAttribute('cy', CY); ring.setAttribute('r', R);
+  ring.setAttribute('fill', 'none');
+  ring.setAttribute('stroke', '#C4982A');
+  ring.setAttribute('stroke-width', '3');
+  ringG.appendChild(ring);
+
+  // ── Legend table ───────────────────────────────────────────────────────────
+  const panel = document.getElementById('table-panel');
+
+  for (const entry of visible) {
+    const domain  = entry.domain.join(' & ');
+    const artHtml = entry.img
+      ? `<img src="${entry.img}" alt="${entry.name}">`
+      : `<div class="thumb-init">${entry.name.charAt(0)}</div>`;
+
+    const row = document.createElement('div');
+    row.className = 'legend-row';
+    row.style.setProperty('--c', entry.color);
+    row.innerHTML = `
+      <div class="thumb">${artHtml}</div>
+      <div class="info">
+        <div class="info-name">${entry.name}</div>
+        ${domain ? `<div class="info-domain">${domain}</div>` : ''}
+      </div>
+      <div class="pct">${entry.pct}%</div>
+      <div class="cnt">${entry.count}</div>
+    `;
+    panel.appendChild(row);
+  }
+</script>
+</body>
+</html>
