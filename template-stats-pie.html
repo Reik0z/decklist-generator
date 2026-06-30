@@ -99,11 +99,9 @@
   .slice img {
     position: absolute;
     width: 460px;
-    height: 680px; /* portrait card scaled to 460px wide */
-    object-fit: cover;
-    object-position: center 0%;
-    top: -20px; left: 0;
+    height: auto; /* natural portrait aspect ratio ~642px */
     display: block;
+    /* top/left set per-slice by JS transform */
   }
   .slice-overlay {
     position: absolute; inset: 0;
@@ -254,14 +252,8 @@
       <div id="pie-wrap">
         <!-- slice divs injected by JS, then SVG overlay -->
         <svg id="pie-svg" viewBox="0 0 460 460">
-          <defs>
-            <filter id="txt-shadow">
-              <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="black" flood-opacity="0.95"/>
-            </filter>
-          </defs>
           <g id="pie-lines"></g>
           <g id="pie-ring"></g>
-          <g id="pie-labels"></g>
         </svg>
       </div>
     </div>
@@ -329,11 +321,16 @@
     return `M ${CX} ${CY} L ${p1.x.toFixed(3)} ${p1.y.toFixed(3)} A ${R} ${R} 0 ${lg} 1 ${p2.x.toFixed(3)} ${p2.y.toFixed(3)} Z`;
   }
 
-  const wrap       = document.getElementById('pie-wrap');
-  const svgEl      = document.getElementById('pie-svg');
-  const linesG     = document.getElementById('pie-lines');
-  const ringG      = document.getElementById('pie-ring');
-  const labelsG    = document.getElementById('pie-labels');
+  const wrap   = document.getElementById('pie-wrap');
+  const svgEl  = document.getElementById('pie-svg');
+  const linesG = document.getElementById('pie-lines');
+  const ringG  = document.getElementById('pie-ring');
+
+  // Portrait card face is roughly at horizontal center, ~20% from the top
+  // of a card image scaled to 460px wide (~640px tall).
+  // We translate each image so the face lands at the visual centroid of its slice.
+  const FACE_X = CX;       // face is horizontally centered in the card
+  const FACE_Y = 130;      // face Y in the 460×~640 scaled portrait image
 
   let angle = 0;
 
@@ -346,18 +343,28 @@
 
     const path   = arcPath(startAngle, endAngle);
     const midAng = (startAngle + endAngle) / 2;
-    const lp     = polar(R * 0.60, midAng);
 
-    // ── Slice div (HTML, clip-path cuts to wedge shape) ──
+    // ── Slice div ──
     const sliceDiv = document.createElement('div');
     sliceDiv.className = 'slice';
     sliceDiv.style.clipPath = `path('${path}')`;
 
     if (entry.img) {
+      // Centroid of this slice in container coordinates
+      const centroid = polar(R * 0.56, midAng);
+
+      // Translate so the face (FACE_X, FACE_Y) lands at the centroid
+      const tx = centroid.x - FACE_X;
+      const ty = centroid.y - FACE_Y;
+
       const img = document.createElement('img');
       img.src = entry.img;
       img.loading = 'eager';
+      img.style.left = '0';
+      img.style.top  = '0';
+      img.style.transform = `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px)`;
       sliceDiv.appendChild(img);
+
       const overlay = document.createElement('div');
       overlay.className = 'slice-overlay';
       sliceDiv.appendChild(overlay);
@@ -368,35 +375,19 @@
       sliceDiv.appendChild(fb);
     }
 
-    // Insert before the SVG so SVG stays on top
     wrap.insertBefore(sliceDiv, svgEl);
 
-    // ── Separator line at startAngle ──
-    const lp1 = polar(R, startAngle);
+    // ── Separator line ──
+    const ep = polar(R, startAngle);
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     line.setAttribute('x1', CX); line.setAttribute('y1', CY);
-    line.setAttribute('x2', lp1.x.toFixed(2)); line.setAttribute('y2', lp1.y.toFixed(2));
+    line.setAttribute('x2', ep.x.toFixed(2)); line.setAttribute('y2', ep.y.toFixed(2));
     line.setAttribute('stroke', '#C4982A');
     line.setAttribute('stroke-width', '2.5');
     linesG.appendChild(line);
-
-    // ── % label (only if slice is big enough) ──
-    if (sweep > 11) {
-      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      text.setAttribute('x', lp.x.toFixed(2));
-      text.setAttribute('y', (lp.y + 6).toFixed(2));
-      text.setAttribute('text-anchor', 'middle');
-      text.setAttribute('font-family', "'Segoe UI', Arial, sans-serif");
-      text.setAttribute('font-size', '17');
-      text.setAttribute('font-weight', '900');
-      text.setAttribute('fill', 'white');
-      text.setAttribute('filter', 'url(#txt-shadow)');
-      text.textContent = entry.pct + '%';
-      labelsG.appendChild(text);
-    }
   }
 
-  // Close last separator
+  // Final separator line (closes the last slice)
   const lastPt = polar(R, 0);
   const lastLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
   lastLine.setAttribute('x1', CX); lastLine.setAttribute('y1', CY);
