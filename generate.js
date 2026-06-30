@@ -50,12 +50,14 @@ function resolveImage(card) {
 }
 
 // ── Decklist parser ───────────────────────────────────────────────────────────
-const SECTION_REGEX = /^(Legend|Champion|MainDeck|Battlefields|Rune\s*Pool|Sideboard)\s*:\s*(.*)/i;
+const SECTION_REGEX = /^(Legend|Champion|MainDeck|Battlefields|Runes?(?:\s*Pool)?|Sideboard)\s*:\s*(.*)/i;
 const SECTION_MAP   = {
   legend:      'legend',
   champion:    'champion',
   maindeck:    'maindeck',
   battlefields:'battlefields',
+  runes:       'runepool',
+  rune:        'runepool',
   rune_pool:   'runepool',
   runepool:    'runepool',
   sideboard:   'sideboard',
@@ -66,12 +68,12 @@ function parseDecklist(raw) {
 
   // Ensure every section keyword starts on its own line
   const normalised = raw
-    .replace(/(Legend\s*:)/gi,       '\n$1')
-    .replace(/(Champion\s*:)/gi,     '\n$1')
-    .replace(/(MainDeck\s*:)/gi,     '\n$1')
-    .replace(/(Battlefields\s*:)/gi, '\n$1')
-    .replace(/(Rune\s*Pool\s*:)/gi,  '\n$1')
-    .replace(/(Sideboard\s*:)/gi,    '\n$1');
+    .replace(/(Legend\s*:)/gi,              '\n$1')
+    .replace(/(Champion\s*:)/gi,            '\n$1')
+    .replace(/(MainDeck\s*:)/gi,            '\n$1')
+    .replace(/(Battlefields\s*:)/gi,        '\n$1')
+    .replace(/(Runes?\s*(?:Pool\s*)?:)/gi,  '\n$1')
+    .replace(/(Sideboard\s*:)/gi,           '\n$1');
 
   let section = null;
 
@@ -91,7 +93,7 @@ function parseDecklist(raw) {
     const cardMatch = line.match(/^(\d+)\s+(.+?)\.?\s*$/);
     if (cardMatch) {
       const qty  = parseInt(cardMatch[1], 10);
-      const name = cardMatch[2].trim();
+      const name = cardMatch[2].replace(/\s*\[[A-Z0-9*-]+\]\s*$/, '').trim();
       const card = findCard(name);
       deck[section].push({ qty, name, card, img: resolveImage(card), orientation: card?.orientation ?? 'portrait' });
     }
